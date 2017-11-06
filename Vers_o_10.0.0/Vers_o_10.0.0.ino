@@ -8,11 +8,15 @@
 
 #define DBG_OUTPUT_PORT Serial
 
-const char* ssid = "Rede AviV-Virus";
-const char* password = "familiaviva10";
+const char* ssid = "Labauto";
+const char* password = "daniel12";
 const char* host = "esp8266sd";
 
 int caractere[20];
+int caractereP[20];
+int caractereQ[20];
+
+
 
 ESP8266WebServer server(80);
 
@@ -213,11 +217,7 @@ void setup(void) {
   server.on("/list", HTTP_GET, printDirectory);
 
 
-  server.on("/P", []() {
-    String messager = "";
-    serialreq(0x4D);
-    server.send(200, "text/html", messager);
-  });
+
 
 
   server.on("/Comando", []() {
@@ -238,96 +238,7 @@ void setup(void) {
       messager += " NAME:" + server.argName(i) + "<br> VALUE: " + comando + "<br>";
     }
 
-    if (comando == "Q") {
-      serialreq(0x51);
-      int voltage = caractere[1] * 256 + caractere[2];
-      int voltagein = caractere[3] * 256 + caractere[4];
-      int voltageout = caractere[5] * 256 + caractere[6];
-      int potout = caractere[7] * 256 + caractere[8];
-      int frq = caractere[9] * 256 + caractere[10];
-      int bat = caractere[11] * 256 + caractere[12];
-      int temp = caractere[13] * 256 + caractere[14];
-      messager += "<html>";
-      messager += "<head>";
-      messager += "<title>Nobreak</title>";
-      messager += "</head>";
-      messager += "<body>";
-      messager += millis();
-      messager += "<br>";
-      messager += "ultima tensão de entrada registrada antes de entrar em autonomia: ";
-      messager += voltage;
-      messager += "<br>";
-      messager += "Tensão de entrada: ";
-      messager += voltagein;
-      messager += "<br>";
-      messager += "Tensão de saida: ";
-      messager += voltageout;
-      messager += "<br>";
-      messager += "%Potout= ";
-      messager += potout;
-      messager += "<br>";
-      messager += "Frequencia de saida: ";
-      messager += frq;
-      messager += "<br>";
-      messager += "%bat= ";
-      messager += bat;
-      messager += "<br>";
-      messager += "Temperatura: ";
-      messager += temp;
-      messager += "<br>";
-      messager += "</body>";
-      messager += "</html>";
-    }
-    else {
-      messager += "Noo<br>";
-      messager += "<img src=\"1.gif\" alt=\"HTML5 Icon\" style=\"width:128px;height:128px;\"> <br>";
-    }
-    server.send(200, "text/html", messager);
-  });
-
-
-  server.on("/interno", []() {
-    String messager = "";
-    serialreq(0x51);
-    int voltage = caractere[1] * 256 + caractere[2];
-    int voltagein = caractere[3] * 256 + caractere[4];
-    int voltageout = caractere[5] * 256 + caractere[6];
-    int potout = caractere[7] * 256 + caractere[8];
-    int frq = caractere[9] * 256 + caractere[10];
-    int bat = caractere[11] * 256 + caractere[12];
-    int temp = caractere[13] * 256 + caractere[14];
-    messager += "<html>";
-    messager += "<head>";
-    messager += "<title>Nobreak</title>";
-    messager += "</head>";
-    messager += "<body>";
-    messager += millis();
-    messager += "<br>";
-    messager += "ultima tensão de entrada registrada antes de entrar em autonomia: ";
-    messager += voltage;
-    messager += "<br>";
-    messager += "Tensão de entrada: ";
-    messager += voltagein;
-    messager += "<br>";
-    messager += "Tensão de saida: ";
-    messager += voltageout;
-    messager += "<br>";
-    messager += "%Potout= ";
-    messager += potout;
-    messager += "<br>";
-    messager += "Frequencia de saida: ";
-    messager += frq;
-    messager += "<br>";
-    messager += "%bat= ";
-    messager += bat;
-    messager += "<br>";
-    messager += "Temperatura: ";
-    messager += temp;
-    messager += "<br>";
-    messager += "</body>";
-    messager += "</html>";
-    server.send(200, "text/html", messager);
-
+     
 
   });
   server.onNotFound(handleNotFound);
@@ -347,7 +258,45 @@ void setup(void) {
 //    while(1);
 //  }
 
-  server.on("/info", []() {
+
+
+server.on("/reqM", []() {
+    String messager = "Enviado M beef on/off";
+    serialreq(0x4D);
+
+       
+    server.send(200, "text/text", messager);
+  });
+
+  server.on("/infoP", []() {
+    String messager = "";
+    serialreq(0x50);
+
+    int freq_in = caractere[1] * 256 + caractere[2];
+    int tens_bypass = caractere[3] * 256 + caractere[4];
+    int W_out = caractere[5] * 256 + caractere[6];
+    int S_out = caractere[7] * 256 + caractere[8];
+    int V_barramento_pos = caractere[9] * 256 + caractere[10];
+    int V_barramento_neg = caractere[11] * 256 + caractere[12];
+    int temp_boost = caractere[13] * 256 + caractere[14];
+
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& root = jsonBuffer.createObject();
+    root["freq_in"] = freq_in;
+    root["tens_bypass"] = tens_bypass;
+    root["W_out"] = W_out;
+    root["S_out"] = S_out;
+    root["V_barramento_pos"] = V_barramento_pos;
+    root["V_barramento_neg"] = V_barramento_neg;
+    root["temp_boost"] = temp_boost;
+
+
+    root.printTo(messager);
+    
+    server.send(200, "text/json", messager);
+  });
+
+  server.on("/infoQ", []() {
     serialreq(0x51);
 
     int voltage = caractere[1] * 256 + caractere[2];
