@@ -12,10 +12,8 @@ const char* ssid = "Labauto";
 const char* password = "daniel12";
 const char* host = "esp8266sd";
 
-int caractere[20];
-int caractereP[20];
-int caractereQ[20];
-
+int caractere[2][20];
+typeprotocol=0;
 
 
 ESP8266WebServer server(80);
@@ -35,13 +33,23 @@ void ReadStringSerial() {
   // Enquanto receber algo pela serial
   while (Serial.available() > 0) {
     // Lê byte da serial
-    caractere[i] = Serial.read();
+    caractere[typeprotocol][i] = Serial.read();
     i++;
   }
 }
 
 void returnFail(String msg) {
   server.send(500, "text/plain", msg + "\r\n");
+}
+
+void serialreqP () {
+  serialreqp (0x50);
+  typeprotocol = 2;
+}
+
+void serialreqQ () {
+  serialreqp (0x51);
+  typeprotocol = 1;
 }
 
 void serialreq (char protocolo) {
@@ -271,7 +279,7 @@ server.on("/reqM", []() {
   server.on("/infoP", []() {
     String messager = "";
     serialreq(0x50);
-
+if (caractere [2][0] = 0x50) {
     int freq_in = caractere[1] * 256 + caractere[2];
     int tens_bypass = caractere[3] * 256 + caractere[4];
     int W_out = caractere[5] * 256 + caractere[6];
@@ -279,7 +287,7 @@ server.on("/reqM", []() {
     int V_barramento_pos = caractere[9] * 256 + caractere[10];
     int V_barramento_neg = caractere[11] * 256 + caractere[12];
     int temp_boost = caractere[13] * 256 + caractere[14];
-
+} // pode dar erro por causa da declaracao do int
     StaticJsonBuffer<200> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["freq_in"] = freq_in;
